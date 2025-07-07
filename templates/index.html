@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pelusas - Juego Visual</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(255,255,255,0.08) 0%, transparent 50%);
+            animation: floatBg 20s ease-in-out infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes floatBg {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-20px) rotate(1deg); }
+        }
+
+        #configuracion {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: white;
+            text-align: center;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #configuracion h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FF6347);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5)); }
+            to { filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8)); }
+        }
+
+        .config-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.8s ease-out 0.3s both;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        #configuracion label {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            display: block;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        #configuracion select,
+        #configuracion button {
+            padding: 15px 25px;
+            margin: 15px 0;
+            font-size: 1.1em;
+            border-radius: 12px;
+            border: none;
+            width: 280px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        #configuracion select {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            backdrop-filter: blur(10px);
+        }
+
+        #configuracion select:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        #modelos-seleccion-container select { /* Esto podría eliminarse si el div de modelos se maneja con checkboxes */
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            background: #fff;
+            color: #333;
+            font-size: 1em;
+        }
+        
+        #lista-modelos-checkboxes div label input[type="checkbox"] { /* Estilo para los checkboxes */
+            margin-right: 10px;
+            transform: scale(1.2); 
+            accent-color: #FFD700; 
+        }
+
+
+        #configuracion button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        #configuracion button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.6);
+        }
+
+        #configuracion button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        #testeando {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            min-width: 400px;
+            animation: popIn 0.5s ease-out;
+            z-index: 2000; 
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        #testeando h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+
+        #modelos-status {
+            list-style: none;
+            text-align: left;
+            padding-left: 0;
+        }
+
+        #modelos-status li {
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(230, 230, 230, 0.8); 
+            border-radius: 10px;
+            border-left: 4px solid #2196F3;
+            transition: all 0.3s ease;
+            animation: slideInListItem 0.5s ease-out; 
+            opacity: 1;
+        }
+
+        @keyframes slideInListItem { 
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        #mesa {
+            display: none;
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background:
+                radial-gradient(ellipse at center, #1e3c72 0%, #2a5298 100%),
+                linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%),
+                linear-gradient(-45deg, rgba(255,255,255,0.05) 25%, transparent 25%);
+            border-radius: 0;
+            animation: fadeIn 1s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        #monton {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 160px;
+            height: 160px;
+            border: 3px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .carta-monton {
+            position: absolute;
+            width: 50px;
+            height: 75px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #0f4c75;
+            border-radius: 8px;
+            box-shadow:
+                0 8px 16px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform: rotate(var(--rotation));
+            animation: cardFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes cardFloat {
+            0%, 100% { transform: rotate(var(--rotation)) translateY(0px); }
+            50% { transform: rotate(var(--rotation)) translateY(-5px); }
+        }
+
+        .carta-monton::before {
+            content: '🂠';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            color: #0f4c75;
+        }
+
+        .jugador-mesa {
+            position: absolute;
+            padding: 15px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            gap: 10px;
+            min-width: 150px; 
+        }
+        .jugador-mesa.es-humano { 
+            border: 2px solid #FFD700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+
+        .jugador-mesa:hover {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .jugador-superior { top: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
+        .jugador-inferior { bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column-reverse; align-items: center; }
+        .jugador-lateral-izquierda { top: 50%; left: 20px; transform: translateY(-50%); display: flex; flex-direction: row; align-items: center; }
+        .jugador-lateral-derecha { top: 50%; right: 20px; transform: translateY(-50%); display: flex; flex-direction: row-reverse; align-items: center; }
+
+        .jugador-nombre {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px; 
+        }
+
+        .jugador-nombre.activo {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            animation: pulseActivePlayer 1.5s ease-in-out infinite; 
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+        }
+
+        @keyframes pulseActivePlayer { 
+            0% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 0.7; transform: scale(1); }
+        }
+        
+        .loading { display: inline-block; animation: pulseLoading 1s infinite alternate; } 
+        @keyframes pulseLoading { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        .cartas, .cartas-temp {
+            display: flex;
+            gap: 8px;
+            min-height: 80px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .cartas-temp { background: rgba(255, 193, 7, 0.2); border: 2px dashed rgba(255, 193, 7, 0.5); }
+        .cartas { background: rgba(76, 175, 80, 0.2); border: 2px solid rgba(76, 175, 80, 0.3); }
+
+        .jugador-lateral-izquierda .cartas, .jugador-lateral-izquierda .cartas-temp,
+        .jugador-lateral-derecha .cartas, .jugador-lateral-derecha .cartas-temp {
+            flex-direction: column; align-items: center; max-width: 80px;
+        }
+        .jugador-lateral-izquierda .carta, .jugador-lateral-derecha .carta { margin: 2px 0; }
+        .jugador-lateral-izquierda .carta { transform: rotate(90deg); }
+        .jugador-lateral-derecha .carta { transform: rotate(-90deg); }
+
+        .carta {
+            width: 50px; height: 75px; border-radius: 8px; border: 2px solid #333;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1em; position: relative; cursor: default; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            animation: cardAppear 0.5s ease-out;
+        }
+        @keyframes cardAppear {
+            from { opacity: 0; transform: scale(0.8) translateY(-20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        
+        .carta[data-numero="1"] { background: linear-gradient(135deg, #ff9a9e, #fecfef); color: #333; }
+        .carta[data-numero="2"] { background: linear-gradient(135deg, #a8edea, #fed6e3); color: #333; }
+        .carta[data-numero="3"] { background: linear-gradient(135deg, #d299c2, #fef9d7); color: #333; }
+        .carta[data-numero="4"] { background: linear-gradient(135deg, #89f7fe, #66a6ff); color: #333; }
+        .carta[data-numero="5"] { background: linear-gradient(135deg, #fdbb2d, #22c1c3); color: #333; }
+        .carta[data-numero="6"] { background: linear-gradient(135deg, #e3ffe7, #d9e7ff); color: #333; }
+        .carta[data-numero="7"] { background: linear-gradient(135deg, #fbc2eb, #a6c1ee); color: #333; }
+        .carta[data-numero="8"] { background: linear-gradient(135deg, #f093fb, #f5576c); color: white; }
+        .carta[data-numero="9"] { background: linear-gradient(135deg, #4facfe, #00f2fe); color: #333; }
+        .carta[data-numero="10"] { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #333; }
+        .carta span { font-size: 1.2em; margin-bottom: 2px; }
+
+        #panel-lateral {
+            position: fixed; top: 20px; right: 20px; background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px); padding: 25px; border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.3);
+            min-width: 250px; animation: slideInRightPanel 0.8s ease-out; 
+            z-index: 100;
+        }
+        @keyframes slideInRightPanel { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+
+        .jugador-info {
+            margin: 12px 0; padding: 12px; background: rgba(255,255,255,0.8);
+            border-radius: 10px; border-left: 4px solid #2196F3;
+            transition: all 0.3s ease; font-weight: 500;
+        }
+        .jugador-info:hover { transform: translateX(5px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .jugador-info.activo { border-left-color: #FF9800; background: rgba(255,152,0,0.1); transform: translateX(5px); }
+        .jugador-info.es-humano { border-left-color: #FFD700; background: rgba(255, 215, 0, 0.15); font-weight: bold;}
+
+
+        #turno-actual {
+            position: fixed; bottom: 30px; left: 30px; background: rgba(0,0,0,0.8);
+            color: white; padding: 15px 25px; border-radius: 25px; font-size: 1.1em;
+            font-weight: 600; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);
+            animation: slideInLeftTurno 0.8s ease-out; 
+            z-index: 100;
+        }
+        @keyframes slideInLeftTurno { from { opacity: 0; transform: translateX(-100px); } to { opacity: 1; transform: translateX(0); } }
+        #turno-jugador { color: #FFD700; font-weight: 700; }
+
+        #mensaje {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9); color: white; padding: 25px 35px; border-radius: 15px;
+            font-size: 1.3em; font-weight: 600; text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.2); z-index: 1000;
+            animation: messagePopIn 0.5s ease-out; max-width: 80%; display: none;
+        }
+        #mensaje.error { background: rgba(211, 47, 47, 0.9); } /* Rojo para errores */
+        #mensaje.success { background: rgba(56, 142, 60, 0.9); } /* Verde para éxito */
+        #mensaje.warning { background: rgba(245, 124, 0, 0.9); } /* Naranja para advertencias */
+
+
+        @keyframes messagePopIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        #controles-humano {
+            position: fixed;
+            bottom: 100px; 
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.85); /* Un poco más opaco */
+            border-radius: 12px; /* Bordes más redondeados */
+            z-index: 150;
+            display: none; 
+            box-shadow: 0 5px 25px rgba(0,0,0,0.6);
+            border-top: 2px solid rgba(255,255,255,0.3);
+            text-align: center; /* Centrar contenido interno */
+            min-width: 300px; /* Ancho mínimo */
+        }
+        #controles-humano-info {
+            color: white;
+            margin-bottom: 15px; /* Más espacio */
+            font-weight: bold;
+            font-size: 1.1em; /* Un poco más grande */
+            padding: 5px;
+            border-bottom: 1px solid rgba(255,255,255,0.2); /* Separador */
+        }
+        #controles-humano-acciones button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1em;
+            font-weight: 500; /* Ligeramente más grueso */
+            margin: 8px 5px; /* Más margen */
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        #controles-humano-acciones button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px); /* Efecto hover */
+        }
+        #controles-humano-acciones button.secondary {
+            background-color: #f44336; /* Rojo para acciones secundarias/negativas */
+        }
+        #controles-humano-acciones button.secondary:hover {
+            background-color: #da190b;
+        }
+         #controles-humano-acciones button.confirm { /* Estilo específico para confirmación */
+            background-color: #2196F3; /* Azul */
+        }
+        #controles-humano-acciones button.confirm:hover {
+            background-color: #1976D2;
+        }
+
+
+        @media (max-width: 768px) {
+            #configuracion h1 { font-size: 2.5rem; }
+            .config-container { padding: 20px; margin: 20px; }
+            #configuracion select, #configuracion button { width: 100%; }
+            #panel-lateral { position: static; margin: 10px auto; min-width: 90%; max-width: 90%; }
+            .jugador-mesa { padding: 10px; min-width: 100px; }
+            .carta { width: 40px; height: 60px; font-size: 0.8em; }
+            #turno-actual { bottom: 10px; left: 10px; padding: 10px 15px; font-size: 1em;}
+            #controles-humano { bottom: 60px; width: 90%; padding: 10px; } 
+            #controles-humano-acciones button { font-size: 0.9em; padding: 10px 15px; margin: 5px; }
+        }
+
+        .carta-nueva-anim { animation: cartaNuevaAnimKeyframes 0.6s ease-out; } 
+        @keyframes cartaNuevaAnimKeyframes { 
+            0% { opacity: 0; transform: scale(1.3) rotate(10deg) translateY(-20px); } /* Añadir translateY */
+            50% { opacity: 0.8; transform: scale(1.1) rotate(-5deg) translateY(5px); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg) translateY(0); }
+        }
+
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div id="configuracion"></div>
+    <div id="testeando" style="display: none;">
+        <h2>🔍 Preparando Inteligencias Artificiales</h2>
+        <ul id="modelos-status"></ul>
+    </div>
+    <div id="mesa">
+        <div id="monton"></div>
+        <div id="jugadores-mesa"></div>
+    </div>
+    <div id="panel-lateral">
+        <h3 style="text-align: center; margin-bottom: 20px; color: #333; font-weight: 700;">📊 PUNTUACIONES</h3>
+    </div>
+    <div id="turno-actual" style="display: none;">
+        🎯 Turno de: <span id="turno-jugador">Esperando...</span>
+    </div>
+    <div id="mensaje" style="display: none;"></div>
+
+    <div id="controles-humano">
+        <div id="controles-humano-info">¡Es tu turno!</div>
+        <div id="controles-humano-acciones">
+            {/* Los botones se añadirán aquí dinámicamente */}
+        </div>
+    </div>
+
+
+    <script>
+        const socket = io();
+
+        const configuracionDiv = $('#configuracion');
+        const testeandoDiv = $('#testeando');
+        const mesaDiv = $('#mesa');
+        const controlesHumanoDiv = $('#controles-humano');
+        const controlesHumanoInfoDiv = $('#controles-humano-info');
+        const controlesHumanoAccionesDiv = $('#controles-humano-acciones');
+
+        let modoJuego = 'single';
+        let modoSeleccion = 'random'; 
+        let modelosDisponibles = [];
+        let modelosSeleccionados = []; 
+
+        let jugadores = []; 
+        let jugadorActualNombre = ""; 
+        let humanPlayerName = null; 
+
+        const emojis = {'1':'🎲','2':'🎯','3':'🎪','4':'🎭','5':'🎨','6':'🎵','7':'🎸','8':'🎺','9':'🎹','10':'🎻'};
+
+        function crearCarta(numero) {
+            return `<div class="carta" data-numero="${numero}"><span>${emojis[numero]}</span><div>${numero}</div></div>`;
+        }
+
+        function crearMonton(numCartas) {
+            const monton = $('#monton');
+            monton.empty();
+            monton.append(`<div style="color: rgba(255,255,255,0.8); font-weight: bold; font-size: 1.2em; z-index: 10; position: relative;">${numCartas} cartas</div>`);
+            const maxCartasVisuales = Math.min(numCartas, 8);
+            for (let i = 0; i < maxCartasVisuales; i++) {
+                const angle = (360 / maxCartasVisuales) * i;
+                const radius = 30 + (Math.random() * 10 - 5); 
+                const x = Math.cos(angle * Math.PI / 180) * radius;
+                const y = Math.sin(angle * Math.PI / 180) * radius;
+                const rotation = Math.random() * 40 - 20;
+                monton.append(`<div class="carta-monton" style="transform: translate(${x}px, ${y}px) rotate(${rotation}deg); --rotation: ${rotation}deg; animation-delay: ${i * 0.1}s;"></div>`);
+            }
+        }
+
+        function mostrarMensaje(texto, duracion = 3000, tipo = 'info') {
+            const mensajeDiv = $('#mensaje');
+            mensajeDiv.text(texto).removeClass('error success warning').addClass(tipo).fadeIn();
+            setTimeout(() => mensajeDiv.fadeOut(), duracion);
+        }
+        
+        function safeId(name) {
+            if (!name) return 'unknown-player-' + Math.random().toString(36).substr(2, 9); // ID aleatorio si el nombre es nulo
+            try {
+                 return 'player-' + btoa(name).replace(/[^a-zA-Z0-9-_]/g, '');
+            } catch (e) { // btoa puede fallar con caracteres no latinos
+                 return 'player-' + name.replace(/[^a-zA-Z0-9-_]/g, '') + Math.random().toString(36).substr(2, 5);
+            }
+        }
+
+
+        $(document).ready(function() {
+            cargarModelosDisponibles();
+            mostrarConfiguracion();
+            mesaDiv.hide();
+            $('#turno-actual').hide();
+            $('#mensaje').hide();
+            controlesHumanoDiv.hide();
+        });
+
+        async function cargarModelosDisponibles() {
+            try {
+                const response = await fetch('/api/free_models');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                modelosDisponibles = await response.json();
+                console.log(`Cargados ${modelosDisponibles.length} modelos disponibles.`);
+            } catch (error) {
+                console.error('Error cargando modelos:', error);
+                mostrarMensaje('Error al cargar modelos de IA. Intenta recargar.', 5000, 'error');
+            }
+        }
+
+        function mostrarConfiguracion() {
+            configuracionDiv.html(`
+                <h1>🎮 PELUSAS</h1>
+                <div class="config-container">
+                    <label for="modo-juego-select">🎯 Modo de Juego:</label>
+                    <select id="modo-juego-select" onchange="cambiarModoJuego(this.value)">
+                        <option value="single">Partida Individual</option>
+                        <option value="hundred">100 Partidas (Solo IAs)</option>
+                    </select>
+                    
+                    <label for="modo-seleccion-select">🤖 Selección de Jugadores:</label>
+                    <select id="modo-seleccion-select" onchange="cambiarModoSeleccion(this.value)">
+                        <option value="random">IAs Aleatorias (Hasta 4)</option>
+                        <option value="manual">Selección Manual de IAs</option>
+                        <option value="player_vs_ia">Jugar contra IAs (Tú vs IAs)</option>
+                    </select>
+                    
+                    <div id="modelos-seleccion-container" style="display: none; margin-top: 20px;">
+                        <label>🎲 Selecciona Modelos de IA (máximo 4):</label>
+                        <div style="max-height: 200px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.3); border-radius: 5px; padding: 10px; background: rgba(0,0,0,0.1);">
+                            <div id="lista-modelos-checkboxes"></div>
+                        </div>
+                        <p style="margin-top: 10px; color: rgba(255,255,255,0.8);">
+                            Seleccionados: <span id="contador-seleccionados">0</span>/4
+                        </p>
+                    </div>
+                    
+                    <button id="btn-iniciar-juego" onclick="iniciarJuego()">🚀 Iniciar Juego</button>
+                </div>
+            `).show();
+        }
+
+        function cambiarModoJuego(valor) {
+            modoJuego = valor;
+            if (modoJuego === 'hundred' && modoSeleccion === 'player_vs_ia') {
+                $('#modo-seleccion-select').val('random'); // No usar .trigger('change') para evitar bucle
+                modoSeleccion = 'random'; // Actualizar variable directamente
+                cambiarModoSeleccionUI(); // Actualizar UI explícitamente
+                mostrarMensaje('El modo "100 Partidas" es solo para IAs. Se cambió la selección de jugadores a aleatoria.', 4000, 'warning');
+            }
+        }
+        
+        function cambiarModoSeleccion(valor) {
+            modoSeleccion = valor;
+            cambiarModoSeleccionUI();
+            if (valor === 'player_vs_ia' && modoJuego === 'hundred') {
+                $('#modo-juego-select').val('single');
+                modoJuego = 'single'; // Actualizar variable directamente
+                mostrarMensaje('El modo "Jugar contra IAs" es para partida individual. Se cambió el modo de juego.', 4000, 'warning');
+            }
+        }
+
+        function cambiarModoSeleccionUI() {
+            const modelosDiv = $('#modelos-seleccion-container');
+            if (modoSeleccion === 'manual') {
+                mostrarSelectorModelos();
+                modelosDiv.slideDown();
+            } else {
+                modelosDiv.slideUp();
+                // No limpiar modelosSeleccionados aquí, para que se mantengan si el usuario vuelve a 'manual'
+            }
+        }
+
+
+        function mostrarSelectorModelos() {
+            const listaModelosCheckboxes = $('#lista-modelos-checkboxes');
+            listaModelosCheckboxes.empty(); 
+            
+            if (modelosDisponibles.length === 0) {
+                listaModelosCheckboxes.html('<p style="color: #ffc107;">No hay modelos disponibles para seleccionar.</p>');
+                return;
+            }
+
+            modelosDisponibles.forEach(modelo => {
+                const isChecked = modelosSeleccionados.includes(modelo.id);
+                listaModelosCheckboxes.append(`
+                    <div style="margin: 8px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                        <label style="cursor: pointer; display: flex; align-items: center; color: rgba(255,255,255,0.9);">
+                            <input type="checkbox" value="${modelo.id}" onchange="toggleModeloSeleccionado(this, '${modelo.id}')" 
+                                   style="margin-right: 12px; transform: scale(1.3);" ${isChecked ? 'checked' : ''}>
+                            <div>
+                                <strong>${modelo.name}</strong>
+                                <br>
+                                <small style="color: rgba(255,255,255,0.7); font-size: 0.85em;">
+                                    ${modelo.provider} | Contexto: ${modelo.context_length ? modelo.context_length.toLocaleString() : 'N/A'}
+                                    ${modelo.description ? `| ${modelo.description.substring(0, 70)}...` : ''}
+                                </small>
+                            </div>
+                        </label>
+                    </div>
+                `);
+            });
+            $('#contador-seleccionados').text(modelosSeleccionados.length);
+        }
+
+        function toggleModeloSeleccionado(checkbox, modeloId) {
+            if (checkbox.checked) {
+                if (modelosSeleccionados.length < 4) {
+                    if (!modelosSeleccionados.includes(modeloId)) modelosSeleccionados.push(modeloId);
+                } else {
+                    checkbox.checked = false;
+                    mostrarMensaje('Máximo 4 modelos de IA permitidos.', 3000, 'warning');
+                }
+            } else {
+                modelosSeleccionados = modelosSeleccionados.filter(id => id !== modeloId);
+            }
+            $('#contador-seleccionados').text(modelosSeleccionados.length);
+        }
+
+        function iniciarJuego() {
+            if (modoSeleccion === 'manual' && modelosSeleccionados.length === 0) {
+                mostrarMensaje('Debes seleccionar al menos 1 modelo de IA para el modo manual.', 3000, 'warning');
+                return;
+            }
+             if (modoSeleccion === 'manual' && modelosSeleccionados.length > 4) {
+                mostrarMensaje('No puedes seleccionar más de 4 modelos de IA.', 3000, 'warning');
+                return;
+            }
+            
+            configuracionDiv.hide();
+            $('#modelos-status').empty(); 
+            
+            const tituloTesteo = (modoSeleccion === 'random' || modoSeleccion === 'player_vs_ia')
+                ? '🔍 Verificando IAs Disponibles...'
+                : '🔍 Preparando IAs Seleccionadas...';
+            
+            $('#testeando h2').text(tituloTesteo);
+            testeandoDiv.fadeIn(300);
+            
+            $('#btn-iniciar-juego').prop('disabled', true); 
+
+            setTimeout(() => {
+                socket.emit('start_game', {
+                    modoJuego: modoJuego,
+                    modoSeleccion: modoSeleccion, 
+                    selectedModels: modoSeleccion === 'manual' ? modelosSeleccionados : [] 
+                });
+            }, 100);
+        }
+        
+        let testedModelUIState = {};
+
+        socket.on('testing_model', function(data) {
+            // console.log('Testing model:', data.model, data.index);
+            const modelKey = data.model + "_" + data.index; 
+            
+            if (!testedModelUIState[modelKey]) { 
+                $('#modelos-status').append(`
+                    <li id="status-${modelKey.replace(/[^a-zA-Z0-9-_]/g, '')}" style="animation-delay: ${data.index * 0.1}s;">
+                        🔍 Testeando ${data.model}... 
+                        <span class="loading" style="color: #ff9800;">⏳</span>
+                    </li>
+                `);
+                testedModelUIState[modelKey] = 'testing';
+            }
+        });
+
+        socket.on('model_tested', function(data) {
+            // console.log('Model tested:', data.model, data.success);
+            const modelKey = data.model + "_" + data.index;
+            const statusText = data.success ? '✅ Listo' : '❌ Error';
+            const color = data.success ? '#4caf50' : '#f44336';
+            
+            const listItem = $(`#status-${modelKey.replace(/[^a-zA-Z0-9-_]/g, '')}`);
+            if (listItem.length) {
+                listItem.html(`
+                    🤖 ${data.model}... 
+                    <span style="color: ${color}; font-weight: bold;">${statusText}</span>
+                `);
+            }
+            testedModelUIState[modelKey] = data.success ? 'success' : 'failed';
+        });
+
+        socket.on('human_player_identity', function(data) {
+            humanPlayerName = data.name;
+            console.log("Identificado como jugador humano:", humanPlayerName);
+        });
+
+        socket.on('game_start', function(data) {
+            testeandoDiv.hide();
+            mesaDiv.show();
+            $('#turno-actual').show();
+            $('#btn-iniciar-juego').prop('disabled', false); 
+            humanPlayerName = data.human_player_name || null; 
+            inicializarMesa(data);
+            testedModelUIState = {}; 
+        });
+
+        socket.on('turn_start', function(data) {
+            jugadorActualNombre = data.jugador;
+            $('#turno-jugador').text(jugadorActualNombre);
+            
+            $('.jugador-nombre').removeClass('activo');
+            $('.jugador-info').removeClass('activo');
+            
+            const jugadorSafeId = safeId(jugadorActualNombre);
+            $(`#${jugadorSafeId}-mesa .jugador-nombre`).addClass('activo');
+            $(`#${jugadorSafeId}-info`).addClass('activo');
+            
+            $('.cartas-temp').empty(); 
+
+            if (jugadorActualNombre === humanPlayerName) {
+                controlesHumanoInfoDiv.text(`¡Tu turno, ${humanPlayerName}!`);
+                // No mostrar botones aquí; esperar a la solicitud específica del servidor
+            } else {
+                controlesHumanoDiv.hide(); 
+            }
+        });
+
+        socket.on('update_game_state', function(data) {
+            actualizarMesa(data);
+        });
+
+        socket.on('card_drawn', function(data) {
+            const jugadorSafeId = safeId(data.jugador);
+            const cartaHTML = crearCarta(data.carta);
+            const zonaTemporalEl = $(`#${jugadorSafeId}-mesa .cartas-temp`);
+            
+            if (zonaTemporalEl.length) {
+                const nuevaCartaEl = $(cartaHTML); // No añadir clase 'carta-nueva' aquí
+                zonaTemporalEl.append(nuevaCartaEl);
+                // Forzar re-flow para la animación
+                void nuevaCartaEl[0].offsetWidth; 
+                nuevaCartaEl.addClass('carta-nueva-anim'); // Añadir clase de animación
+            }
+            
+            // Actualizar el montón de cartas inmediatamente si se proporciona información del mazo
+            if (data.mazo_count !== undefined) {
+                crearMonton(data.mazo_count);
+            }
+        });
+
+
+        socket.on('decision', function(data) {
+            console.log(`${data.jugador} decidió: ${data.decision}`);
+            if (data.jugador === humanPlayerName) { 
+                controlesHumanoDiv.hide();
+            }
+        });
+
+        socket.on('turn_end', function(data) {
+            if (data.jugador === humanPlayerName) {
+                controlesHumanoDiv.hide();
+            }
+        });
+
+        socket.on('game_end', function(data) {
+            controlesHumanoDiv.hide(); 
+            setTimeout(() => {
+                const ganador = data.ganador || "Nadie";
+                let puntosGanador = 'N/A';
+                if (data.puntuaciones && data.jugadores) {
+                    const ganadorIndex = data.jugadores.indexOf(ganador);
+                    if (ganadorIndex !== -1) {
+                        puntosGanador = data.puntuaciones[ganadorIndex];
+                    }
+                }
+                mostrarMensaje(`🏆 ¡${ganador} ha ganado con ${puntosGanador} puntos!`, 5000, 'success');
+                
+                // Volver a la configuración solo si no es modo 'hundred'
+                if (modoJuego !== 'hundred') {
+                     setTimeout(() => { 
+                        mesaDiv.hide();
+                        $('#turno-actual').hide();
+                        $('#panel-lateral').empty().html('<h3 style="text-align: center; margin-bottom: 20px; color: #333; font-weight: 700;">📊 PUNTUACIONES</h3>');
+                        mostrarConfiguracion();
+                        humanPlayerName = null; 
+                    }, 3000);
+                } else {
+                    // Si es modo 'hundred', podría mostrar un mensaje "Siguiente partida en..." o simplemente esperar a que el servidor inicie la siguiente.
+                }
+            }, 1000); 
+        });
+
+        socket.on('temporal_zone_lost', function(data) {
+            mostrarMensaje(`${data.jugador} perdió su zona temporal.`, 3000, 'warning');
+        });
+
+        socket.on('steal_from_player', function(data) {
+            mostrarMensaje(`${data.jugador} robó ${data.carta} de ${data.victima}.`, 3000, 'info');
+        });
+
+        socket.on('error', function(data) {
+            mostrarMensaje('Error: ' + data.message, 5000, 'error');
+            testeandoDiv.hide(); 
+            $('#btn-iniciar-juego').prop('disabled', false); 
+            if (!mesaDiv.is(':visible')) { 
+                mostrarConfiguracion();
+            }
+        });
+        
+        socket.on('message', function(data) { 
+            mostrarMensaje(data.text, 4000, 'info');
+        });
+
+        // --- Manejadores para acciones del jugador humano ---
+        socket.on('human_request_confirm_rules', function(details) {
+            console.log("Servidor pide confirmar reglas:", details);
+            controlesHumanoAccionesDiv.empty().append(
+                '<button class="confirm" onclick="sendHumanConfirmRules(true)">✅ Entendido, ¡listo!</button>'
+            );
+            controlesHumanoInfoDiv.html('Bienvenido a Pelusas. <br>¿Entiendes las reglas y estás listo para empezar?');
+            controlesHumanoDiv.fadeIn();
+        });
+        function sendHumanConfirmRules(confirmed) {
+            socket.emit('human_response_confirm_rules', { confirmed: confirmed });
+            controlesHumanoDiv.fadeOut();
+        }
+
+        socket.on('human_request_decide_action', function(details) {
+            console.log("Servidor pide decidir acción:", details);
+            let infoHtml = `Has robado: <strong style="font-size:1.2em; color: #FFEB3B;">${details.carta_robada_del_mazo}</strong><br>`;
+            infoHtml += `Tu Zona Temporal: <span style="color: #AED581;">${details.zona_temporal.join(', ') || 'Vacía'}</span><br>`;
+            infoHtml += `Cartas en Mazo: ${details.mazo_restante}`;
+
+            controlesHumanoInfoDiv.html(infoHtml);
+            controlesHumanoAccionesDiv.empty().append(
+                '<button onclick="sendHumanDecideAction(\'continuar\')">  (Robar Otra)</button>',
+                '<button class="secondary" onclick="sendHumanDecideAction(\'plantarse\')">🤚 (Plantarse)</button>'
+            );
+            controlesHumanoDiv.fadeIn();
+        });
+        function sendHumanDecideAction(decision) {
+            socket.emit('human_response_decide_action', { decision: decision });
+            // Los controles se ocultarán con el evento 'decision' o 'turn_end' del servidor
+        }
+
+        socket.on('human_request_decide_steal', function(details) {
+            console.log("Servidor pide decidir robo:", details);
+            let stealInfoHtml = `Has robado <strong style="font-size:1.2em; color: #FFEB3B;">${details.carta_a_robar}</strong> del mazo.<br>`;
+            stealInfoHtml += `El jugador <strong>${details.victima_nombre}</strong> tiene esta carta en su zona personal.<br>`;
+            if (details.zona_temporal_propia.includes(details.carta_a_robar)) { // Esto significa que ya la tienes (la que acabas de robar)
+                 stealInfoHtml += `<strong style="color:#4CAF50;">Nota:</strong> Al robar de otros jugadores nunca pierdes tu zona temporal, sin importar si tienes cartas repetidas.`;
+            } else {
+                 stealInfoHtml += `Puedes intentar robarla.`;
+            }
+
+            controlesHumanoInfoDiv.html(stealInfoHtml);
+            controlesHumanoAccionesDiv.empty().append(
+                `<button onclick="sendHumanDecideSteal(true)">🎯 Robar ${details.carta_a_robar} de ${details.victima_nombre}</button>`,
+                '<button class="secondary" onclick="sendHumanDecideSteal(false)">🚫  (No Robar)</button>'
+            );
+            controlesHumanoDiv.fadeIn();
+        });
+        function sendHumanDecideSteal(steal) {
+            socket.emit('human_response_decide_steal', { steal: steal });
+        }
+
+
+        function inicializarMesa(data) {
+            jugadores = data.jugadores; 
+            crearMonton(data.mazo_count);
+            
+            $('#jugadores-mesa').empty();
+            const panelLateral = $('#panel-lateral');
+            panelLateral.html('<h3 style="text-align: center; margin-bottom: 20px; color: #333; font-weight: 700;">📊 PUNTUACIONES</h3>');
+            
+            const posiciones = ['jugador-superior', 'jugador-inferior', 'jugador-lateral-derecha', 'jugador-lateral-izquierda'];
+            
+            jugadores.forEach((nombreJugador, index) => {
+                const jugadorSafeId = safeId(nombreJugador);
+                const esHumanoClass = (nombreJugador === humanPlayerName) ? 'es-humano' : '';
+
+                $('#jugadores-mesa').append(`
+                    <div class="jugador-mesa ${posiciones[index % posiciones.length]} ${esHumanoClass}" id="${jugadorSafeId}-mesa" data-nombre="${nombreJugador}">
+                        <div class="jugador-nombre">${nombreJugador}</div>
+                        <div class="cartas"></div>      
+                        <div class="cartas-temp"></div> 
+                    </div>
+                `);
+                
+                panelLateral.append(`
+                    <div class="jugador-info ${esHumanoClass}" id="${jugadorSafeId}-info" data-nombre="${nombreJugador}">
+                        <span>${nombreJugador}</span>: 0 puntos
+                    </div>
+                `);
+            });
+        }
+
+        function actualizarMesa(data) {
+            if (!data || !data.jugadores) {
+                console.error("actualizarMesa recibió datos inválidos:", data);
+                return;
+            }
+            crearMonton(data.mazo_count);
+            
+            data.jugadores.forEach((nombreJugador, index) => {
+                const jugadorSafeId = safeId(nombreJugador);
+                const mesaJugadorEl = $(`#${jugadorSafeId}-mesa`);
+                const infoJugadorEl = $(`#${jugadorSafeId}-info`);
+
+                if (mesaJugadorEl.length) {
+                    const cartasPersonalesHTML = data.zonas_personales[index].map(c => crearCarta(c)).join('');
+                    mesaJugadorEl.find('.cartas').html(cartasPersonalesHTML);
+                    
+                    const cartasTemporalesHTML = data.zonas_temporales[index].map(c => crearCarta(c)).join('');
+                    mesaJugadorEl.find('.cartas-temp').html(cartasTemporalesHTML);
+
+                }
+                
+                if (infoJugadorEl.length) {
+                    infoJugadorEl.html(`<span>${nombreJugador}</span>: ${data.puntuaciones[index]} puntos`);
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
